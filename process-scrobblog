@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+# Retrieve, process & submit a Rockbox Last.fm scrobble log.
+#
+# Note: Last.fm will only accept a log if at least 1 song was fully
+#       listened to (L). It does not record skipped (S) songs.
+#
+
+set -e
+
+log=".scrobbler.log"
+#config_folder="$HOME/.config/qtscrob/"
+
+device="/dev/disk/by-uuid/D057-2F0C"
+mount="/mnt/mp3"
+scrobbledir="$HOME/.mp3scrobbles"
+
+# if device not present, exit
+if [[ ! -e "$device" ]]; then
+    echo "${0##*/}: error: device not present"
+    exit 1
+fi
+
+sudo mount "$device" "$mount" -o uid=$UID,gid=$UID
+
+if [[ -f "$mount/$log" ]]; then
+    # make a temporary directory for the log, so that it's not lost if
+    # something breaks
+    newdir="$scrobbledir/$(date "+%Y-%m-%d")-scrobbler-log"
+    mkdir "$newdir"
+    mv "$mount/$log" "$newdir"
+
+    # unmount as soon as possible
+    sudo umount "$device"
+    echo "${0##*/}: unmounted"
+
+    # view (& edit) the log (e.g. to delete entries of podcasts)
+    # not really sure if it's useful
+    #vim "$newdir/$log"
+
+    # submit tracks
+    # qtscrob takes it upon itself to delete the file itself, the dirty
+    # program >:(
+    #qtscrob-cli --file --location "$newdir" --config "$config"
+    qtscrob-cli --file --location "$newdir"
+
+    # delete temporary directory
+    rm -rf "$newdir"
+else
+    echo "${0##*/}: no scrobbler log present"
+    sudo umount "$device"
+    return 0
+fi
