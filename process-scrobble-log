@@ -9,7 +9,6 @@
 set -e
 
 log=".scrobbler.log"
-#config_folder="$HOME/.config/qtscrob/"
 
 device="/dev/disk/by-uuid/D057-2F0C"
 mount="/mnt/mp3"
@@ -41,7 +40,6 @@ if [[ -f "$mount/$log" ]]; then
     # submit tracks
     # qtscrob takes it upon itself to delete the file itself, the dirty
     # program >:(
-    #qtscrob-cli --file --location "$newdir" --config "$config"
     qtscrob-cli --file --location "$newdir"
 
     # delete temporary directory
