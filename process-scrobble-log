@@ -14,13 +14,41 @@ device="/dev/disk/by-uuid/D057-2F0C"
 mount="/mnt/mp3"
 scrobbledir="$HOME/.mp3scrobbles"
 
+mount_device() {
+    # try to mount device
+    sudo mount "$device" "$mount" -o uid=$UID,gid=$UID
+
+    # tell how it went
+    if [[ $? == 0 ]]; then
+        echo "${0##*/}: mounted succesfully"
+    else
+        echo "${0##*/}: error: could not mount device $device at mount point $mount"
+        exit 2
+    fi
+}
+
+unmount_device() {
+    # try to unmount device
+    sudo umount "$device"
+
+    # tell how it went
+    if [[ $? == 0 ]]; then
+        echo "${0##*/}: unmounted successfully"
+    else
+        echo "${0##*/}: error: could not unmount $device"
+        exit 3
+    fi
+}
+
 # if device not present, exit
 if [[ ! -e "$device" ]]; then
     echo "${0##*/}: error: device not present"
     exit 1
 fi
 
-sudo mount "$device" "$mount" -o uid=$UID,gid=$UID
+# mount device
+echo "${0##*/}: device found, mounting..."
+mount_device
 
 if [[ -f "$mount/$log" ]]; then
     # make a temporary directory for the log, so that it's not lost if
@@ -30,8 +58,7 @@ if [[ -f "$mount/$log" ]]; then
     mv "$mount/$log" "$newdir"
 
     # unmount as soon as possible
-    sudo umount "$device"
-    echo "${0##*/}: unmounted"
+    unmount_device
 
     # view (& edit) the log (e.g. to delete entries of podcasts)
     # not really sure if it's useful
@@ -46,6 +73,6 @@ if [[ -f "$mount/$log" ]]; then
     rm -rf "$newdir"
 else
     echo "${0##*/}: no scrobbler log present"
-    sudo umount "$device"
-    return 0
+    unmount_device
+    exit 0
 fi
