@@ -6,8 +6,6 @@
 #       listened to (L). It does not record skipped (S) songs.
 #
 
-set -e
-
 logfile=".scrobbler.log"
 
 device="/dev/disk/by-uuid/D057-2F0C"
@@ -114,7 +112,7 @@ fi
 # program >:(
 qtscrob-cli --file --location "$tmp_logdir"
 
-if [[ $? != 1 ]]; then
+if [[ $? != 0 ]]; then
     error "qtscrob-cli failed, exiting"
     exit 3
 elif [[ $? == 0 ]] && [[ -n "$mount_dir" ]]; then
