@@ -10,7 +10,7 @@ logfile=".scrobbler.log"
 
 device="/dev/disk/by-uuid/D057-2F0C"
 mount="/mnt/mp3"
-tmp_dir="$HOME/.mp3scrobbles"
+tmp_dir="/tmp"
 
 usage() {
     cat <<EOF
@@ -77,9 +77,9 @@ fi
 if [[ -f "$log_dir/$logfile" ]]; then
     # found a scrobbler log
     if [[ -n "$mount_dir" ]]; then
-        # we mounted, so we make a temporary directory for the log, so
+        # we mounted, so we make a unique temporary directory for the log, so
         # that it's not lost if something breaks
-        tmp_logdir="$tmp_dir/$(date "+%Y-%m-%d")-scrobbler-log"
+        tmp_logdir="$tmp_dir/$(date +%s)-scrobbler-log"
         mkdir "$tmp_logdir"
         mv "$log_dir/$logfile" "$tmp_logdir"
         log "log moved from device -> $tmp_logdir"
